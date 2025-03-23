@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>KafkaProducer 사용법</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 2em;
+            max-width: 1000px;
+            margin: auto;
+        }
+        h2 {
+            color: #0077aa;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 0.3em;
+        }
+        pre {
+            background-color: #f4f4f4;
+            border-left: 5px solid #0077aa;
+            padding: 1em;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Consolas", monospace;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <h1>KafkaProducer 사용법</h1>
+
+    <pre><code>from kafka import KafkaProducer
+from kafka.errors import KafkaError
+import msgpack
+import json
+
+producer = KafkaProducer(bootstrap_servers=['broker1:1234'])
+</code></pre>
+
+    <p><strong>비동기 메시지 전송:</strong></p>
+    <pre><code>future = producer.send('my-topic', b'raw_bytes')
+</code></pre>
+
+    <p><strong>동기 전송:</strong></p>
+    <pre><code>try:
+    record_metadata = future.get(timeout=10)
+except KafkaError:
+    log.exception()
+</code></pre>
+
+    <p><strong>전송 결과 확인:</strong></p>
+    <pre><code>print(record_metadata.topic)
+print(record_metadata.partition)
+print(record_metadata.offset)
+</code></pre>
+
+    <p><strong>Key 포함 메시지:</strong></p>
+    <pre><code>producer.send('my-topic', key=b'foo', value=b'bar')
+</code></pre>
+
+    <p><strong>MsgPack 직렬화:</strong></p>
+    <pre><code>producer = KafkaProducer(value_serializer=msgpack.dumps)
+producer.send('msgpack-topic', {'key': 'value'})
+</code></pre>
+
+    <p><strong>JSON 직렬화:</strong></p>
+    <pre><code>producer = KafkaProducer(value_serializer=lambda m: json.dumps(m).encode('ascii'))
+producer.send('json-topic', {'key': 'value'})
+</code></pre>
+
+    <p><strong>100개 메시지 전송:</strong></p>
+    <pre><code>for _ in range(100):
+    producer.send('my-topic', b'msg')
+</code></pre>
+
+    <p><strong>콜백 사용:</strong></p>
+    <pre><code>def on_send_success(record_metadata):
+    print(record_metadata.topic)
+    print(record_metadata.partition)
+    print(record_metadata.offset)
+
+def on_send_error(excp):
+    log.error('I am an errback', exc_info=excp)
+
+producer.send('my-topic', b'raw_bytes') \\
+        .add_callback(on_send_success) \\
+        .add_errback(on_send_error)
+</code></pre>
+
+    <p><strong>전송 완료 대기:</strong></p>
+    <pre><code>producer.flush()
+</code></pre>
+
+    <p><strong>재시도 설정:</strong></p>
+    <pre><code>producer = KafkaProducer(retries=5)
+</code></pre>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>KafkaAdminClient 사용법</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 2em;
+            max-width: 1000px;
+            margin: auto;
+        }
+        h2 {
+            color: #0077aa;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 0.3em;
+        }
+        pre {
+            background-color: #f4f4f4;
+            border-left: 5px solid #0077aa;
+            padding: 1em;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Consolas", monospace;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <h1>KafkaAdminClient 사용법</h1>
+
+    <pre><code>from kafka import KafkaAdminClient
+from kafka.admin import NewTopic
+
+admin = KafkaAdminClient(bootstrap_servers=['broker1:1234'])
+
+# 토픽 생성
+topics_list = []
+topics_list.append(NewTopic(name="testtopic", num_partitions=1, replication_factor=1))
+admin.create_topics(topics_list)
+
+# 토픽 삭제
+admin.delete_topics(['testtopic'])
+
+# 컨슈머 그룹 목록
+print(admin.list_consumer_groups())
+
+# 특정 컨슈머 그룹 정보
+print(admin.describe_consumer_groups('cft-plt-qa.connect'))
+
+# 컨슈머 오프셋 조회
+print(admin.list_consumer_group_offsets('cft-plt-qa.connect'))
+</code></pre>
+</body>
+</html>
